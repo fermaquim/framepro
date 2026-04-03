@@ -1,0 +1,1815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d0d0d">
+<title>FramePro</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CSS VARIABLES — Paleta de colores de toda la app
+   Cambia --accent para cambiar el color principal
+============================================================ */
+:root {
+  --bg:       #0d0d0d;
+  --surf:     #171717;
+  --surf2:    #202020;
+  --surf3:    #2a2a2a;
+  --border:   #2c2c2c;
+  --border2:  #383838;
+  --text:     #ede9e3;
+  --text2:    #8a8680;
+  --text3:    #4e4c4a;
+  --accent:   #e8a244;
+  --accent2:  #bf7d1a;
+  --ok:       #4bab78;
+  --warn:     #e8c040;
+  --bad:      #e05040;
+  --blue:     #4a9ee0;
+  --r: 10px; --rsm: 6px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Syne', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 80px;
+  overscroll-behavior: none;
+}
+
+/* ============================================================
+   HEADER
+============================================================ */
+header {
+  background: var(--surf);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 200;
+}
+.logo { display: flex; align-items: center; gap: 9px; }
+.logo-mark {
+  width: 30px; height: 30px;
+  background: var(--accent);
+  border-radius: 7px;
+  display: grid; place-items: center;
+}
+.logo-mark svg { width: 16px; height: 16px; }
+.logo-name { font-size: 17px; font-weight: 800; letter-spacing: -.4px; }
+.logo-name em { color: var(--accent); font-style: normal; }
+.build-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; color: var(--text3);
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  padding: 2px 7px; border-radius: 20px;
+}
+
+/* ============================================================
+   NAV TABS — Pestañas principales
+============================================================ */
+.nav {
+  display: flex; gap: 2px;
+  padding: 10px 16px 0;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto; scrollbar-width: none;
+  background: var(--surf);
+}
+.nav::-webkit-scrollbar { display: none; }
+.nav-btn {
+  padding: 7px 14px 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700;
+  color: var(--text3);
+  background: transparent; border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer; white-space: nowrap;
+  margin-bottom: -1px;
+  transition: color .15s, border-color .15s;
+}
+.nav-btn:hover { color: var(--text2); }
+.nav-btn.on { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ============================================================
+   LAYOUT PRINCIPAL
+============================================================ */
+.main { padding: 14px 14px 0; max-width: 680px; margin: 0 auto; }
+.mod { display: none; }
+.mod.on { display: block; }
+
+/* ============================================================
+   CARDS
+============================================================ */
+.card {
+  background: var(--surf);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.card-hd {
+  font-size: 10px; font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase; letter-spacing: .08em;
+  margin-bottom: 13px;
+  display: flex; align-items: center; gap: 7px;
+}
+.card-hd::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   FRACTION INPUT — El corazón de la app
+   Un input especial que acepta fracciones de pulgada
+============================================================ */
+.fi-wrap {
+  margin-bottom: 11px;
+}
+.fi-label {
+  font-size: 12px; color: var(--text2);
+  margin-bottom: 5px;
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.fi-label small {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; color: var(--text3);
+}
+.fi-display {
+  display: flex; align-items: center;
+  background: var(--surf2);
+  border: 1px solid var(--border2);
+  border-radius: var(--rsm);
+  padding: 0 12px;
+  height: 44px; gap: 8px;
+  cursor: pointer;
+  transition: border-color .15s;
+  position: relative;
+}
+.fi-display.focused { border-color: var(--accent); }
+.fi-display.has-error { border-color: var(--bad); }
+.fi-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 17px; font-weight: 500;
+  color: var(--text); flex: 1;
+  white-space: nowrap; overflow: hidden;
+}
+.fi-value.placeholder { color: var(--text3); font-size: 14px; }
+.fi-decimal {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text3);
+}
+.fi-unit {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; color: var(--text3);
+}
+
+/* ============================================================
+   TECLADO DE FRACCIONES
+   Aparece debajo del campo cuando lo tocas
+============================================================ */
+.fkb {
+  display: none;
+  background: var(--surf2);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 10px;
+  margin-top: 6px;
+}
+.fkb.open { display: block; }
+
+/* Fila de fracciones */
+.fkb-fracs {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 5px;
+  margin-bottom: 7px;
+}
+.fkb-fracs2 {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 5px;
+  margin-bottom: 7px;
+}
+
+/* Fila de números */
+.fkb-nums {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 5px;
+  margin-bottom: 7px;
+}
+
+/* Fila de acciones */
+.fkb-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1.5fr;
+  gap: 5px;
+}
+
+/* Botón del teclado */
+.kbtn {
+  height: 36px;
+  border: 1px solid var(--border2);
+  border-radius: var(--rsm);
+  background: var(--surf3);
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  display: grid; place-items: center;
+  transition: background .1s, transform .08s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.kbtn:active { transform: scale(0.94); background: var(--border2); }
+
+/* Botón de fracción */
+.kbtn.frac { font-size: 11px; color: var(--text2); }
+.kbtn.frac.sel { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+
+/* Botón de número */
+.kbtn.num { font-size: 15px; font-weight: 600; color: var(--text); }
+
+/* Botón de acción */
+.kbtn.act { font-size: 12px; font-weight: 700; color: var(--text2); }
+.kbtn.act-ok { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; font-size: 13px; }
+.kbtn.act-del { color: var(--bad); }
+
+/* Separador del teclado */
+.kbtn-sep {
+  height: 1px; background: var(--border);
+  margin: 6px 0;
+}
+
+/* Label de sección dentro del teclado */
+.kbtn-label {
+  font-size: 9px; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 4px;
+  font-family: 'Syne', sans-serif;
+}
+
+/* ============================================================
+   SELECT NORMAL (para opciones no numéricas)
+============================================================ */
+.fi-select-wrap { margin-bottom: 11px; }
+.fi-select-label { font-size: 12px; color: var(--text2); margin-bottom: 5px; }
+.fi-select {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surf2);
+  border: 1px solid var(--border2);
+  border-radius: var(--rsm);
+  outline: none;
+}
+.fi-select:focus { border-color: var(--accent); }
+
+/* ============================================================
+   BOTÓN PRINCIPAL
+============================================================ */
+.btn-main {
+  width: 100%;
+  padding: 13px;
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700;
+  color: #000; background: var(--accent);
+  border: none; border-radius: var(--r);
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  letter-spacing: .01em;
+  margin-top: 4px;
+}
+.btn-main:active { transform: scale(.99); background: var(--accent2); }
+
+.btn-sec {
+  padding: 8px 14px;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px; font-weight: 700;
+  color: var(--text2);
+  background: transparent;
+  border: 1px solid var(--border2);
+  border-radius: var(--rsm);
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+}
+.btn-sec:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ============================================================
+   MÉTRICAS DE RESULTADO
+============================================================ */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap: 7px; margin-bottom: 10px;
+}
+.met {
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: var(--rsm);
+  padding: 11px 10px;
+}
+.met-lbl {
+  font-size: 9px; font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase; letter-spacing: .06em;
+  margin-bottom: 5px;
+}
+.met-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 16px; font-weight: 500;
+  color: var(--text); line-height: 1;
+}
+.met-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; color: var(--text3); margin-top: 3px;
+}
+.met.ok { border-color: var(--ok); }
+.met.ok .met-val { color: var(--ok); }
+.met.bad { border-color: var(--bad); }
+.met.bad .met-val { color: var(--bad); }
+.met.warn { border-color: var(--warn); }
+.met.warn .met-val { color: var(--warn); }
+
+/* ============================================================
+   ALERTAS
+============================================================ */
+.alert {
+  padding: 10px 13px;
+  border-radius: var(--rsm);
+  font-size: 13px; line-height: 1.45;
+  margin-bottom: 8px;
+  border-left: 3px solid;
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.alert.ok  { background: rgba(75,171,120,.1); border-color: var(--ok);  color: #7dd4a0; }
+.alert.warn{ background: rgba(232,192,64,.1); border-color: var(--warn); color: #f0d060; }
+.alert.bad { background: rgba(224,80,64,.1);  border-color: var(--bad);  color: #f08878; }
+.alert-ico { flex-shrink: 0; font-size: 13px; margin-top: 1px; }
+
+/* ============================================================
+   INNER TABS
+============================================================ */
+.itabs {
+  display: flex; gap: 4px;
+  background: var(--surf2);
+  padding: 4px; border-radius: var(--rsm);
+  margin-bottom: 13px;
+}
+.itab {
+  flex: 1; padding: 7px 8px;
+  font-family: 'Syne', sans-serif;
+  font-size: 11px; font-weight: 700;
+  color: var(--text3);
+  background: transparent; border: none;
+  border-radius: 4px; cursor: pointer;
+  text-align: center;
+  transition: background .12s, color .12s;
+  white-space: nowrap;
+}
+.itab.on { background: var(--surf); color: var(--accent); border: 1px solid var(--border2); }
+
+.ipanel { display: none; }
+.ipanel.on { display: block; }
+
+/* ============================================================
+   TABLA
+============================================================ */
+.tbl-wrap { overflow-x: auto; border-radius: var(--rsm); border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: 'DM Mono', monospace; }
+thead tr { background: var(--surf2); }
+th {
+  font-family: 'Syne', sans-serif;
+  font-size: 9px; font-weight: 700;
+  color: var(--text3);
+  text-transform: uppercase; letter-spacing: .06em;
+  padding: 9px 10px; text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+td { padding: 7px 10px; color: var(--text2); border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr.sp td { color: var(--accent); font-weight: 500; }
+tr:hover td { background: var(--surf2); }
+
+/* ============================================================
+   IRC ROWS
+============================================================ */
+.irc-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 9px 0; border-bottom: 1px solid var(--border); gap: 8px;
+}
+.irc-row:last-child { border-bottom: none; }
+.irc-name { font-size: 12px; color: var(--text); flex: 1; }
+.irc-ref { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); min-width: 72px; text-align: right; }
+.irc-val { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text2); min-width: 52px; text-align: right; }
+.tag {
+  font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px; min-width: 38px; text-align: center;
+  text-transform: uppercase; letter-spacing: .03em;
+}
+.tag.ok  { background: rgba(75,171,120,.15); color: var(--ok); }
+.tag.bad { background: rgba(224,80,64,.15);  color: var(--bad); }
+.tag.na  { background: var(--surf2); color: var(--text3); }
+
+/* ============================================================
+   DIAGRAMA
+============================================================ */
+.diagram-wrap {
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: var(--r); padding: 12px;
+}
+.diagram-legend {
+  display: flex; gap: 14px; flex-wrap: wrap;
+  margin-top: 10px; font-size: 11px; color: var(--text3);
+}
+.leg-item { display: flex; align-items: center; gap: 5px; }
+.leg-dot { width: 9px; height: 9px; border-radius: 2px; }
+
+/* ============================================================
+   CONVERSOR — Módulo 2
+============================================================ */
+.conv-result {
+  background: var(--surf2);
+  border: 1px solid var(--border2);
+  border-radius: var(--rsm);
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  font-family: 'DM Mono', monospace;
+}
+.conv-row {
+  display: flex; justify-content: space-between;
+  align-items: center; padding: 5px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.conv-row:last-child { border-bottom: none; }
+.conv-label { color: var(--text3); font-size: 11px; }
+.conv-val { color: var(--accent); font-weight: 500; }
+
+/* Pitágoras */
+.pyth-visual {
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: var(--r); padding: 12px;
+  margin-bottom: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ============================================================
+   FRAMING — Módulo 3
+============================================================ */
+.mat-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.mat-row:last-child { border-bottom: none; }
+.mat-name { font-size: 13px; color: var(--text2); }
+.mat-note { font-size: 10px; color: var(--text3); margin-top: 2px; font-family: 'DM Mono', monospace; }
+.mat-qty { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--accent); white-space: nowrap; margin-left: 12px; }
+
+/* ============================================================
+   HEADER TABLE (IRC)
+============================================================ */
+.header-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.header-tbl th { font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; padding: 8px 8px; border-bottom: 1px solid var(--border); }
+.header-tbl td { padding: 7px 8px; color: var(--text2); border-bottom: 1px solid var(--border); font-family: 'DM Mono', monospace; }
+.header-tbl tr:last-child td { border-bottom: none; }
+.header-tbl .hl td { color: var(--accent); font-weight: 500; }
+
+/* ============================================================
+   DEFAULTS — Módulo 4
+============================================================ */
+.def-note {
+  font-size: 12px; color: var(--text3);
+  background: var(--surf2);
+  border: 1px solid var(--border);
+  border-radius: var(--rsm);
+  padding: 10px 13px;
+  margin-bottom: 12px; line-height: 1.5;
+}
+.def-note strong { color: var(--accent); font-weight: 600; }
+
+.sep { height: 1px; background: var(--border); margin: 12px 0; }
+
+@media (max-width: 400px) {
+  .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .fkb-fracs, .fkb-fracs2 { grid-template-columns: repeat(4, 1fr); }
+  .met-val { font-size: 14px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M1 14 L8 3 L15 14" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M3.5 10 L12.5 10" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M2 13 L14 13" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="logo-name">Frame<em>Pro</em></div>
+  </div>
+  <div class="build-tag">Entrega A</div>
+</header>
+
+<!-- NAV PRINCIPAL -->
+<div class="nav">
+  <button class="nav-btn on" onclick="showMod('escalera',this)">Escalera</button>
+  <button class="nav-btn" onclick="showMod('barandas',this)">Barandas</button>
+  <button class="nav-btn" onclick="showMod('conversor',this)">Conversor</button>
+  <button class="nav-btn" onclick="showMod('framing',this)">Framing</button>
+  <button class="nav-btn" onclick="showMod('defaults',this)">Defaults</button>
+</div>
+
+<div class="main">
+
+<!-- ============================================================
+     MÓDULO 1: ESCALERA RECTA
+============================================================ -->
+<div id="mod-escalera" class="mod on">
+
+  <div class="card">
+    <div class="card-hd">Escalera recta — datos</div>
+
+    <!-- Cada fi-wrap es un campo con teclado de fracciones -->
+    <div class="fi-wrap">
+      <div class="fi-label">Altura total (Total Rise) <small>piso a piso</small></div>
+      <div class="fi-display" onclick="openKb('er-rise')" id="er-rise-disp">
+        <span class="fi-value" id="er-rise-val">109"</span>
+        <span class="fi-decimal" id="er-rise-dec">= 109.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-er-rise"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Ancho de escalera <small>mín IRC 36"</small></div>
+      <div class="fi-display" onclick="openKb('er-width')" id="er-width-disp">
+        <span class="fi-value" id="er-width-val">36"</span>
+        <span class="fi-decimal" id="er-width-dec">= 36.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-er-width"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Grosor del tread <small>2x=1½", hardwood=¾"</small></div>
+      <div class="fi-display" onclick="openKb('er-tthick')" id="er-tthick-disp">
+        <span class="fi-value" id="er-tthick-val">1 1/2"</span>
+        <span class="fi-decimal" id="er-tthick-dec">= 1.500</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-er-tthick"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Nosing <small>IRC ¾"–1¼"</small></div>
+      <div class="fi-display" onclick="openKb('er-nosing')" id="er-nosing-disp">
+        <span class="fi-value" id="er-nosing-val">3/4"</span>
+        <span class="fi-decimal" id="er-nosing-dec">= 0.750</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-er-nosing"></div>
+    </div>
+
+    <div class="fi-select-wrap">
+      <div class="fi-select-label">Madera del stringer</div>
+      <select class="fi-select" id="er-stringer">
+        <option value="11.25">2×12 — ancho actual 11¼"</option>
+        <option value="9.25">2×10 — ancho actual 9¼"</option>
+      </select>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Headroom disponible <small>mín IRC 80" (6'8")</small></div>
+      <div class="fi-display" onclick="openKb('er-head')" id="er-head-disp">
+        <span class="fi-value" id="er-head-val">96"</span>
+        <span class="fi-decimal" id="er-head-dec">= 96.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-er-head"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Rise objetivo <small>tu preferencia</small></div>
+      <div class="fi-display" onclick="openKb('er-target')" id="er-target-disp">
+        <span class="fi-value" id="er-target-val">7"</span>
+        <span class="fi-decimal" id="er-target-dec">= 7.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-er-target"></div>
+    </div>
+
+    <div class="sep"></div>
+    <button class="btn-main" onclick="calcEscalera()">Calcular escalera</button>
+  </div>
+
+  <div id="er-out" style="display:none">
+    <div class="metrics" id="er-mets"></div>
+    <div id="er-alerts"></div>
+    <div class="card">
+      <div class="itabs">
+        <button class="itab on" onclick="iTab(this,'er','irc')">IRC</button>
+        <button class="itab" onclick="iTab(this,'er','tabla')">Escalones</button>
+        <button class="itab" onclick="iTab(this,'er','diag')">Diagrama</button>
+        <button class="itab" onclick="iTab(this,'er','mats')">Materiales</button>
+      </div>
+      <div id="er-irc" class="ipanel on"></div>
+      <div id="er-tabla" class="ipanel">
+        <div class="tbl-wrap">
+          <table><thead><tr><th>#</th><th>Rise acum.</th><th>Run acum.</th><th>Corte stringer</th><th>Nota</th></tr></thead>
+          <tbody id="er-tbody"></tbody></table>
+        </div>
+        <div style="margin-top:8px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace">* #1: resta grosor tread (IRC R311.7.5)</div>
+      </div>
+      <div id="er-diag" class="ipanel">
+        <div class="diagram-wrap">
+          <svg id="er-svg" viewBox="0 0 360 220" style="width:100%;display:block"></svg>
+          <div class="diagram-legend">
+            <div class="leg-item"><div class="leg-dot" style="background:#e8a244"></div>Stringer</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#4a9ee0"></div>Tread</div>
+            <div class="leg-item"><div class="leg-dot" style="background:#9b7edd"></div>Riser</div>
+          </div>
+        </div>
+      </div>
+      <div id="er-mats" class="ipanel" style="padding-top:2px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MÓDULO 2: BARANDAS
+============================================================ -->
+<div id="mod-barandas" class="mod">
+
+  <!-- Balaustres -->
+  <div class="card">
+    <div class="card-hd">Espaciado de balaustres</div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Longitud total del run <small>poste a poste</small></div>
+      <div class="fi-display" onclick="openKb('bal-len')" id="bal-len-disp">
+        <span class="fi-value" id="bal-len-val">120"</span>
+        <span class="fi-decimal" id="bal-len-dec">= 120.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-bal-len"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Ancho del baluster <small>típico 1½" (2×2)</small></div>
+      <div class="fi-display" onclick="openKb('bal-bw')" id="bal-bw-disp">
+        <span class="fi-value" id="bal-bw-val">1 1/2"</span>
+        <span class="fi-decimal" id="bal-bw-dec">= 1.500</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-bal-bw"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Espacio máximo permitido <small>IRC: 4" | editable</small></div>
+      <div class="fi-display" onclick="openKb('bal-gap')" id="bal-gap-disp">
+        <span class="fi-value" id="bal-gap-val">4"</span>
+        <span class="fi-decimal" id="bal-gap-dec">= 4.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-bal-gap"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Ancho del poste (post) <small>típico 3½" (4×4)</small></div>
+      <div class="fi-display" onclick="openKb('bal-pw')" id="bal-pw-disp">
+        <span class="fi-value" id="bal-pw-val">3 1/2"</span>
+        <span class="fi-decimal" id="bal-pw-dec">= 3.500</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-bal-pw"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Número de postes <small>incluye ambos extremos</small></div>
+      <div class="fi-display" onclick="openKb('bal-posts')" id="bal-posts-disp">
+        <span class="fi-value" id="bal-posts-val">2</span>
+        <span class="fi-decimal" id="bal-posts-dec"></span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-bal-posts"></div>
+    </div>
+
+    <div class="sep"></div>
+    <button class="btn-main" onclick="calcBal()">Calcular balaustres</button>
+  </div>
+
+  <div id="bal-out" style="display:none">
+    <div class="metrics" id="bal-mets"></div>
+    <div id="bal-alerts"></div>
+    <div class="card" id="bal-detail"></div>
+  </div>
+
+  <!-- Handrail -->
+  <div class="card">
+    <div class="card-hd">Handrail (pasamanos)</div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Run horizontal total <small>largo de la escalera</small></div>
+      <div class="fi-display" onclick="openKb('hr-run')" id="hr-run-disp">
+        <span class="fi-value" id="hr-run-val">120"</span>
+        <span class="fi-decimal" id="hr-run-dec">= 120.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-hr-run"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Total Rise de la escalera</div>
+      <div class="fi-display" onclick="openKb('hr-rise')" id="hr-rise-disp">
+        <span class="fi-value" id="hr-rise-val">109"</span>
+        <span class="fi-decimal" id="hr-rise-dec">= 109.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-hr-rise"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Altura del handrail <small>IRC: 34"–38"</small></div>
+      <div class="fi-display" onclick="openKb('hr-h')" id="hr-h-disp">
+        <span class="fi-value" id="hr-h-val">36"</span>
+        <span class="fi-decimal" id="hr-h-dec">= 36.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-hr-h"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">2da altura (niños) <small>0 = no aplica</small></div>
+      <div class="fi-display" onclick="openKb('hr-h2')" id="hr-h2-disp">
+        <span class="fi-value placeholder" id="hr-h2-val">0 (no aplica)</span>
+        <span class="fi-decimal" id="hr-h2-dec"></span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-hr-h2"></div>
+    </div>
+
+    <div class="sep"></div>
+    <button class="btn-main" onclick="calcHr()">Calcular handrail</button>
+  </div>
+
+  <div id="hr-out" style="display:none">
+    <div class="metrics" id="hr-mets"></div>
+    <div id="hr-alerts"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MÓDULO 3: CONVERSOR RÁPIDO
+============================================================ -->
+<div id="mod-conversor" class="mod">
+
+  <!-- Conversor de unidades -->
+  <div class="card">
+    <div class="card-hd">Conversor de medidas</div>
+    <div class="fi-wrap">
+      <div class="fi-label">Medida a convertir</div>
+      <div class="fi-display" onclick="openKb('cv-in')" id="cv-in-disp">
+        <span class="fi-value" id="cv-in-val">6 13/16"</span>
+        <span class="fi-decimal" id="cv-in-dec">= 6.8125</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-cv-in"></div>
+    </div>
+    <div class="sep"></div>
+    <div class="conv-result" id="cv-result">
+      <div class="conv-row"><span class="conv-label">Fracción</span><span class="conv-val" id="cv-frac">6 13/16"</span></div>
+      <div class="conv-row"><span class="conv-label">Decimal</span><span class="conv-val" id="cv-dec2">6.8125"</span></div>
+      <div class="conv-row"><span class="conv-label">Pies-pulgadas</span><span class="conv-val" id="cv-ft">0' 6 13/16"</span></div>
+      <div class="conv-row"><span class="conv-label">Pies decimal</span><span class="conv-val" id="cv-ftdec">0.568 ft</span></div>
+      <div class="conv-row"><span class="conv-label">Centímetros</span><span class="conv-val" id="cv-cm">17.32 cm</span></div>
+      <div class="conv-row"><span class="conv-label">Milímetros</span><span class="conv-val" id="cv-mm">173.2 mm</span></div>
+    </div>
+  </div>
+
+  <!-- Pitágoras / 3-4-5 -->
+  <div class="card">
+    <div class="card-hd">Pitágoras — cuadrar esquinas</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.5">
+      Mete dos lados → te da el tercero. Usa para verificar que una esquina está a 90°.
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Lado A</div>
+      <div class="fi-display" onclick="openKb('py-a')" id="py-a-disp">
+        <span class="fi-value" id="py-a-val">36"</span>
+        <span class="fi-decimal" id="py-a-dec">= 36.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-py-a"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Lado B</div>
+      <div class="fi-display" onclick="openKb('py-b')" id="py-b-disp">
+        <span class="fi-value" id="py-b-val">48"</span>
+        <span class="fi-decimal" id="py-b-dec">= 48.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-py-b"></div>
+    </div>
+
+    <div class="sep"></div>
+    <button class="btn-main" onclick="calcPyth()">Calcular diagonal (lado C)</button>
+
+    <div id="py-out" style="display:none;margin-top:12px">
+      <div class="conv-result">
+        <div class="conv-row"><span class="conv-label">Diagonal (C)</span><span class="conv-val" id="py-c">—</span></div>
+        <div class="conv-row"><span class="conv-label">En pies-pulgadas</span><span class="conv-val" id="py-cft">—</span></div>
+        <div class="conv-row"><span class="conv-label">Ángulo A</span><span class="conv-val" id="py-ang">—</span></div>
+        <div class="conv-row"><span class="conv-label">¿Es 90°?</span><span class="conv-val" id="py-sq">—</span></div>
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text3)">
+        Regla 3-4-5: múltiplos exactos confirman 90°. Ej: 3'–4'–5', 6'–8'–10', 9'–12'–15'
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculadora de ángulos de corte -->
+  <div class="card">
+    <div class="card-hd">Ángulo de corte de sierra</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px;line-height:1.5">
+      Mete el pitch (rise/run) y te da el bevel angle exacto para la sierra.
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Rise (vertical)</div>
+      <div class="fi-display" onclick="openKb('ang-rise')" id="ang-rise-disp">
+        <span class="fi-value" id="ang-rise-val">7"</span>
+        <span class="fi-decimal" id="ang-rise-dec">= 7.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-ang-rise"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Run (horizontal)</div>
+      <div class="fi-display" onclick="openKb('ang-run')" id="ang-run-disp">
+        <span class="fi-value" id="ang-run-val">10 1/2"</span>
+        <span class="fi-decimal" id="ang-run-dec">= 10.500</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-ang-run"></div>
+    </div>
+
+    <div class="sep"></div>
+    <button class="btn-main" onclick="calcAngle()">Calcular ángulo</button>
+
+    <div id="ang-out" style="display:none;margin-top:12px">
+      <div class="conv-result">
+        <div class="conv-row"><span class="conv-label">Ángulo de inclinación</span><span class="conv-val" id="ang-deg">—</span></div>
+        <div class="conv-row"><span class="conv-label">Bevel para la sierra</span><span class="conv-val" id="ang-bevel">—</span></div>
+        <div class="conv-row"><span class="conv-label">Complemento (90°-ángulo)</span><span class="conv-val" id="ang-comp">—</span></div>
+        <div class="conv-row"><span class="conv-label">Pitch (por pie)</span><span class="conv-val" id="ang-pitch">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MÓDULO 4: FRAMING DE PAREDES
+============================================================ -->
+<div id="mod-framing" class="mod">
+
+  <div class="card">
+    <div class="card-hd">Studs por pared</div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Longitud de la pared</div>
+      <div class="fi-display" onclick="openKb('fw-len')" id="fw-len-disp">
+        <span class="fi-value" id="fw-len-val">144"</span>
+        <span class="fi-decimal" id="fw-len-dec">= 144.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-fw-len"></div>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Altura del ceiling <small>típico: 96", 108", 120"</small></div>
+      <div class="fi-display" onclick="openKb('fw-h')" id="fw-h-disp">
+        <span class="fi-value" id="fw-h-val">96"</span>
+        <span class="fi-decimal" id="fw-h-dec">= 96.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-fw-h"></div>
+    </div>
+
+    <div class="fi-select-wrap">
+      <div class="fi-select-label">Spacing de studs</div>
+      <select class="fi-select" id="fw-oc">
+        <option value="16">16" OC — estándar residencial</option>
+        <option value="24">24" OC — exterior / ahorro madera</option>
+        <option value="12">12" OC — cargas pesadas</option>
+      </select>
+    </div>
+
+    <div class="fi-select-wrap">
+      <div class="fi-select-label">Tamaño de madera</div>
+      <select class="fi-select" id="fw-size">
+        <option value="2x4">2×4 (ancho real 3½")</option>
+        <option value="2x6">2×6 (ancho real 5½") — exterior</option>
+      </select>
+    </div>
+
+    <div class="fi-wrap">
+      <div class="fi-label">Vanos en esta pared <small>puertas, ventanas</small></div>
+      <div class="fi-display" onclick="openKb('fw-open')" id="fw-open-disp">
+        <span class="fi-value" id="fw-open-val">0</span>
+        <span class="fi-decimal" id="fw-open-dec"></span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-fw-open"></div>
+    </div>
+
+    <div class="sep"></div>
+    <button class="btn-main" onclick="calcFraming()">Calcular framing</button>
+  </div>
+
+  <div id="fw-out" style="display:none">
+    <div class="metrics" id="fw-mets"></div>
+    <div id="fw-alerts"></div>
+    <div class="card">
+      <div class="itabs">
+        <button class="itab on" onclick="iTab(this,'fw','studs')">Studs</button>
+        <button class="itab" onclick="iTab(this,'fw','headers')">Headers IRC</button>
+        <button class="itab" onclick="iTab(this,'fw','lista')">Lista madera</button>
+      </div>
+      <div id="fw-studs" class="ipanel on"></div>
+      <div id="fw-headers" class="ipanel"></div>
+      <div id="fw-lista" class="ipanel"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MÓDULO 5: DEFAULTS
+============================================================ -->
+<div id="mod-defaults" class="mod">
+
+  <div class="def-note">
+    Estos son los valores IRC por defecto. <strong>Edítalos</strong> si tu inspector, arquitecto o cliente piden medidas diferentes. Aplican a todos los cálculos.
+  </div>
+
+  <div class="card">
+    <div class="card-hd">Escalera — límites</div>
+    <div class="fi-wrap">
+      <div class="fi-label">Rise máximo <small>IRC R311.7.5.1</small></div>
+      <div class="fi-display" onclick="openKb('def-rmax')" id="def-rmax-disp">
+        <span class="fi-value" id="def-rmax-val">7 3/4"</span>
+        <span class="fi-decimal" id="def-rmax-dec">= 7.750</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-def-rmax"></div>
+    </div>
+    <div class="fi-wrap">
+      <div class="fi-label">Rise mínimo <small>IRC R311.7.5.1</small></div>
+      <div class="fi-display" onclick="openKb('def-rmin')" id="def-rmin-disp">
+        <span class="fi-value" id="def-rmin-val">4"</span>
+        <span class="fi-decimal" id="def-rmin-dec">= 4.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-def-rmin"></div>
+    </div>
+    <div class="fi-wrap">
+      <div class="fi-label">Run mínimo <small>IRC R311.7.5.2</small></div>
+      <div class="fi-display" onclick="openKb('def-runmin')" id="def-runmin-disp">
+        <span class="fi-value" id="def-runmin-val">10"</span>
+        <span class="fi-decimal" id="def-runmin-dec">= 10.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-def-runmin"></div>
+    </div>
+    <div class="fi-wrap">
+      <div class="fi-label">Ancho mínimo escalera <small>IRC R311.7.1</small></div>
+      <div class="fi-display" onclick="openKb('def-wmin')" id="def-wmin-disp">
+        <span class="fi-value" id="def-wmin-val">36"</span>
+        <span class="fi-decimal" id="def-wmin-dec">= 36.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-def-wmin"></div>
+    </div>
+    <div class="fi-wrap">
+      <div class="fi-label">Headroom mínimo <small>IRC R311.7.2</small></div>
+      <div class="fi-display" onclick="openKb('def-hmin')" id="def-hmin-disp">
+        <span class="fi-value" id="def-hmin-val">80"</span>
+        <span class="fi-decimal" id="def-hmin-dec">= 80.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-def-hmin"></div>
+    </div>
+    <div class="fi-wrap">
+      <div class="fi-label">Throat mínimo stringer <small>IRC R802.7</small></div>
+      <div class="fi-display" onclick="openKb('def-tmin')" id="def-tmin-disp">
+        <span class="fi-value" id="def-tmin-val">3 1/2"</span>
+        <span class="fi-decimal" id="def-tmin-dec">= 3.500</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-def-tmin"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">Barandas — límites</div>
+    <div class="fi-wrap">
+      <div class="fi-label">Espacio máx. balaustres <small>IRC R312.1.3</small></div>
+      <div class="fi-display" onclick="openKb('def-bgap')" id="def-bgap-disp">
+        <span class="fi-value" id="def-bgap-val">4"</span>
+        <span class="fi-decimal" id="def-bgap-dec">= 4.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-def-bgap"></div>
+    </div>
+    <div class="fi-wrap">
+      <div class="fi-label">Handrail mínimo <small>IRC R311.7.8</small></div>
+      <div class="fi-display" onclick="openKb('def-hrmin')" id="def-hrmin-disp">
+        <span class="fi-value" id="def-hrmin-val">34"</span>
+        <span class="fi-decimal" id="def-hrmin-dec">= 34.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-def-hrmin"></div>
+    </div>
+    <div class="fi-wrap">
+      <div class="fi-label">Handrail máximo <small>IRC R311.7.8</small></div>
+      <div class="fi-display" onclick="openKb('def-hrmax')" id="def-hrmax-disp">
+        <span class="fi-value" id="def-hrmax-val">38"</span>
+        <span class="fi-decimal" id="def-hrmax-dec">= 38.000</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-def-hrmax"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-hd">Materiales — desperdicio</div>
+    <div class="fi-wrap">
+      <div class="fi-label">Waste en treads</div>
+      <div class="fi-display" onclick="openKb('def-wt')" id="def-wt-disp">
+        <span class="fi-value" id="def-wt-val">10</span>
+        <span class="fi-decimal" id="def-wt-dec">%</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-def-wt"></div>
+    </div>
+    <div class="fi-wrap">
+      <div class="fi-label">Waste en studs framing</div>
+      <div class="fi-display" onclick="openKb('def-ws')" id="def-ws-disp">
+        <span class="fi-value" id="def-ws-val">10</span>
+        <span class="fi-decimal" id="def-ws-dec">%</span>
+        <span class="fi-unit">↓</span>
+      </div>
+      <div class="fkb" id="kb-def-ws"></div>
+    </div>
+  </div>
+
+  <button class="btn-main" onclick="saveDefaults()">Guardar cambios</button>
+  <button class="btn-sec" onclick="resetDefaults()" style="width:100%;margin-top:8px;padding:11px">Restaurar IRC original</button>
+</div>
+
+</div><!-- /.main -->
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+
+// ============================================================
+// ESTADO GLOBAL — Valores de cada campo
+// Cada campo tiene un ID y un valor decimal interno
+// ============================================================
+const state = {
+  // Escalera
+  'er-rise':   109,    'er-width': 36,   'er-tthick': 1.5,
+  'er-nosing': 0.75,   'er-head':  96,   'er-target': 7,
+  // Barandas
+  'bal-len': 120, 'bal-bw': 1.5, 'bal-gap': 4, 'bal-pw': 3.5, 'bal-posts': 2,
+  'hr-run': 120, 'hr-rise': 109, 'hr-h': 36, 'hr-h2': 0,
+  // Conversor
+  'cv-in': 6.8125,
+  // Pitágoras
+  'py-a': 36, 'py-b': 48,
+  // Ángulos
+  'ang-rise': 7, 'ang-run': 10.5,
+  // Framing
+  'fw-len': 144, 'fw-h': 96, 'fw-open': 0,
+  // Defaults
+  'def-rmax': 7.75, 'def-rmin': 4, 'def-runmin': 10,
+  'def-wmin': 36, 'def-hmin': 80, 'def-tmin': 3.5,
+  'def-bgap': 4, 'def-hrmin': 34, 'def-hrmax': 38,
+  'def-wt': 10, 'def-ws': 10,
+};
+
+// Campo activo del teclado
+let activeField = null;
+
+// ============================================================
+// FUNCIONES DE FORMATO
+// ============================================================
+
+// Decimal a fracción de pulgada legible: 6.8125 → "6 13/16""
+function toFrac(val) {
+  if (isNaN(val) || val === null) return '—';
+  const neg = val < 0;
+  val = Math.abs(val);
+  const whole = Math.floor(val);
+  const frac = val - whole;
+  const table = [
+    [0,''], [0.0625,'1/16"'], [0.125,'1/8"'], [0.1875,'3/16"'],
+    [0.25,'1/4"'], [0.3125,'5/16"'], [0.375,'3/8"'], [0.4375,'7/16"'],
+    [0.5,'1/2"'], [0.5625,'9/16"'], [0.625,'5/8"'], [0.6875,'11/16"'],
+    [0.75,'3/4"'], [0.8125,'13/16"'], [0.875,'7/8"'], [0.9375,'15/16"']
+  ];
+  let best = table[0], bd = 999;
+  for (const f of table) { const d = Math.abs(frac - f[0]); if (d < bd) { bd = d; best = f; } }
+  const sign = neg ? '-' : '';
+  return sign + (whole > 0 ? (best[1] ? `${whole} ${best[1]}` : `${whole}"`) : (best[1] || '0"'));
+}
+
+// Pulgadas a pies-pulgadas: 109 → "9' 1""
+function toFtIn(inches) {
+  const ft = Math.floor(Math.abs(inches) / 12);
+  const ins = Math.abs(inches) % 12;
+  if (ft === 0) return toFrac(ins);
+  return ins < 0.001 ? `${ft}'` : `${ft}' ${toFrac(ins)}`;
+}
+
+// Fracción texto a decimal: "6 13/16" → 6.8125
+function fracToDecimal(str) {
+  str = str.trim().replace(/"$/, '');
+  if (!str || str === '0') return 0;
+
+  // Formato "6 13/16" o "13/16" o "6"
+  const parts = str.split(' ');
+  let whole = 0, frac = 0;
+
+  if (parts.length === 2) {
+    whole = parseInt(parts[0]) || 0;
+    const fp = parts[1].split('/');
+    if (fp.length === 2) frac = parseInt(fp[0]) / parseInt(fp[1]);
+  } else if (parts[0].includes('/')) {
+    const fp = parts[0].split('/');
+    frac = parseInt(fp[0]) / parseInt(fp[1]);
+  } else {
+    whole = parseFloat(parts[0]) || 0;
+  }
+
+  return whole + frac;
+}
+
+// Actualiza el display de un campo
+function updateDisplay(id) {
+  const val = state[id];
+  const valEl = document.getElementById(id + '-val');
+  const decEl = document.getElementById(id + '-dec');
+  if (!valEl) return;
+
+  // Campos de porcentaje (defaults de waste)
+  if (id.startsWith('def-w')) {
+    valEl.textContent = val;
+    valEl.classList.remove('placeholder');
+    if (decEl) decEl.textContent = '%';
+    return;
+  }
+
+  // Campos de conteo entero (postes, vanos)
+  if (id === 'bal-posts' || id === 'fw-open') {
+    valEl.textContent = val <= 0 ? '0' : Math.round(val).toString();
+    valEl.classList.remove('placeholder');
+    if (decEl) decEl.textContent = '';
+    return;
+  }
+
+  if (val === 0 && (id === 'hr-h2')) {
+    valEl.textContent = '0 (no aplica)';
+    valEl.classList.add('placeholder');
+    if (decEl) decEl.textContent = '';
+    return;
+  }
+
+  valEl.textContent = toFrac(val);
+  valEl.classList.remove('placeholder');
+  if (decEl) decEl.textContent = `= ${val.toFixed(4).replace(/\.?0+$/, '')}`;
+
+  // Actualizar conversor en tiempo real
+  if (id === 'cv-in') updateConvResult();
+}
+
+// ============================================================
+// TECLADO DE FRACCIONES
+// Sistema de entrada con botones para fracciones de pulgada
+// ============================================================
+
+// Definición de todas las fracciones disponibles
+const FRACS = [
+  '1/16"','1/8"','3/16"','1/4"','5/16"','3/8"','7/16"','1/2"',
+  '9/16"','5/8"','11/16"','3/4"','13/16"','7/8"','15/16"',''
+];
+
+const FRAC_VALS = [
+  0.0625,0.125,0.1875,0.25,0.3125,0.375,0.4375,0.5,
+  0.5625,0.625,0.6875,0.75,0.8125,0.875,0.9375,0
+];
+
+// Estado interno del teclado
+let kbState = { whole: '', frac: 0, fracIdx: -1 };
+
+// Construye el HTML del teclado
+function buildKb(fieldId) {
+  const kb = document.getElementById('kb-' + fieldId);
+  if (!kb || kb.innerHTML) return; // ya construido
+
+  kb.innerHTML = `
+    <div class="kbtn-label">Fracción</div>
+    <div class="fkb-fracs" id="kbf1-${fieldId}">
+      ${FRACS.slice(0,8).map((f,i) =>
+        `<button class="kbtn frac" data-idx="${i}" onclick="selectFrac('${fieldId}',${i})">${f||'0"'}</button>`
+      ).join('')}
+    </div>
+    <div class="fkb-fracs2" id="kbf2-${fieldId}">
+      ${FRACS.slice(8,16).map((f,i) =>
+        `<button class="kbtn frac" data-idx="${i+8}" onclick="selectFrac('${fieldId}',${i+8})">${f||'0"'}</button>`
+      ).join('')}
+    </div>
+    <div class="kbtn-sep"></div>
+    <div class="kbtn-label">Número entero</div>
+    <div class="fkb-nums">
+      ${[1,2,3,4,5,6,7,8,9,0].map(n =>
+        `<button class="kbtn num" onclick="kbNum('${fieldId}',${n})">${n}</button>`
+      ).join('')}
+    </div>
+    <div class="kbtn-sep"></div>
+    <div class="fkb-actions">
+      <button class="kbtn act act-del" onclick="kbDel('${fieldId}')">⌫</button>
+      <button class="kbtn act" onclick="kbClear('${fieldId}')">C</button>
+      <button class="kbtn act" onclick="closeKb('${fieldId}')">▼</button>
+      <button class="kbtn act act-ok" onclick="kbConfirm('${fieldId}')">OK ✓</button>
+    </div>`;
+}
+
+// Abrir el teclado de un campo
+function openKb(fieldId) {
+  // Cerrar el anterior si hay uno abierto
+  if (activeField && activeField !== fieldId) {
+    closeKb(activeField);
+  }
+
+  buildKb(fieldId);
+  activeField = fieldId;
+
+  const kb = document.getElementById('kb-' + fieldId);
+  const disp = document.getElementById(fieldId + '-disp');
+  kb.classList.add('open');
+  disp.classList.add('focused');
+
+  // Inicializar estado del teclado con el valor actual
+  const cur = state[fieldId] || 0;
+  const whole = Math.floor(cur);
+  const frac = cur - whole;
+
+  kbState = { whole: whole > 0 ? whole.toString() : '', frac, fracIdx: -1 };
+
+  // Encontrar fracción más cercana
+  let bestIdx = 15, bestDiff = 999;
+  for (let i = 0; i < FRAC_VALS.length; i++) {
+    const d = Math.abs(frac - FRAC_VALS[i]);
+    if (d < bestDiff) { bestDiff = d; bestIdx = i; }
+  }
+  if (frac > 0.001) {
+    kbState.fracIdx = bestIdx;
+    highlightFrac(fieldId, bestIdx);
+  }
+
+  updateKbDisplay(fieldId);
+}
+
+// Cerrar teclado
+function closeKb(fieldId) {
+  const kb = document.getElementById('kb-' + fieldId);
+  const disp = document.getElementById(fieldId + '-disp');
+  if (kb) kb.classList.remove('open');
+  if (disp) disp.classList.remove('focused');
+  if (activeField === fieldId) activeField = null;
+}
+
+// Seleccionar fracción
+function selectFrac(fieldId, idx) {
+  // Toggle: click en la misma fracción la deselecciona
+  if (kbState.fracIdx === idx) {
+    kbState.fracIdx = -1;
+    kbState.frac = 0;
+  } else {
+    kbState.fracIdx = idx;
+    kbState.frac = FRAC_VALS[idx];
+  }
+  highlightFrac(fieldId, kbState.fracIdx);
+  updateKbDisplay(fieldId);
+  applyKbVal(fieldId);
+}
+
+// Resaltar fracción seleccionada
+function highlightFrac(fieldId, idx) {
+  const kb = document.getElementById('kb-' + fieldId);
+  if (!kb) return;
+  kb.querySelectorAll('.kbtn.frac').forEach((b,i) => {
+    b.classList.toggle('sel', i === idx);
+  });
+}
+
+// Presionar número
+function kbNum(fieldId, n) {
+  if (kbState.whole === '0') kbState.whole = n.toString();
+  else if (kbState.whole.length < 4) kbState.whole += n.toString();
+  updateKbDisplay(fieldId);
+  applyKbVal(fieldId);
+}
+
+// Borrar último dígito
+function kbDel(fieldId) {
+  if (kbState.whole.length > 0) {
+    kbState.whole = kbState.whole.slice(0, -1);
+  } else {
+    kbState.fracIdx = -1;
+    kbState.frac = 0;
+    highlightFrac(fieldId, -1);
+  }
+  updateKbDisplay(fieldId);
+  applyKbVal(fieldId);
+}
+
+// Limpiar todo
+function kbClear(fieldId) {
+  kbState = { whole: '', frac: 0, fracIdx: -1 };
+  highlightFrac(fieldId, -1);
+  updateKbDisplay(fieldId);
+  state[fieldId] = 0;
+  updateDisplay(fieldId);
+}
+
+// Confirmar y cerrar
+function kbConfirm(fieldId) {
+  applyKbVal(fieldId);
+  closeKb(fieldId);
+}
+
+// Aplicar valor al estado
+function applyKbVal(fieldId) {
+  const whole = parseInt(kbState.whole) || 0;
+  state[fieldId] = whole + kbState.frac;
+  updateDisplay(fieldId);
+}
+
+// Actualizar el display del teclado mientras se escribe
+function updateKbDisplay(fieldId) {
+  const whole = kbState.whole || '0';
+  const fracStr = kbState.fracIdx >= 0 ? ' ' + FRACS[kbState.fracIdx] : '"';
+  const valEl = document.getElementById(fieldId + '-val');
+  if (valEl) {
+    valEl.textContent = whole + fracStr;
+    valEl.classList.remove('placeholder');
+  }
+}
+
+// ============================================================
+// NAVEGACIÓN
+// ============================================================
+function showMod(name, btn) {
+  document.querySelectorAll('.mod').forEach(m => m.classList.remove('on'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('on'));
+  document.getElementById('mod-' + name).classList.add('on');
+  btn.classList.add('on');
+  if (activeField) closeKb(activeField);
+}
+
+function iTab(btn, prefix, panel) {
+  const card = btn.closest('.card');
+  card.querySelectorAll('.ipanel').forEach(p => p.classList.remove('on'));
+  card.querySelectorAll('.itab').forEach(t => t.classList.remove('on'));
+  document.getElementById(prefix + '-' + panel).classList.add('on');
+  btn.classList.add('on');
+  if (panel === 'diag') drawDiag();
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function getD(id) { return state['def-' + id] || 0; }
+function mk(cls, label, val, sub) {
+  return `<div class="met ${cls}"><div class="met-lbl">${label}</div><div class="met-val">${val}</div><div class="met-sub">${sub}</div></div>`;
+}
+function mkAlert(t, msg) {
+  const ico = { ok:'✓', warn:'⚠', bad:'✕' };
+  return `<div class="alert ${t}"><span class="alert-ico">${ico[t]}</span>${msg}</div>`;
+}
+
+// ============================================================
+// MÓDULO 1: ESCALERA
+// ============================================================
+let SD = {};
+
+function calcEscalera() {
+  const totalRise  = state['er-rise'];
+  const width      = state['er-width'];
+  const tthick     = state['er-tthick'];
+  const nosing     = state['er-nosing'];
+  const stringer   = parseFloat(document.getElementById('er-stringer').value);
+  const headroom   = state['er-head'];
+  const target     = state['er-target'];
+  const rMax       = getD('rmax'); const rMin = getD('rmin');
+  const runMin     = getD('runmin'); const wMin = getD('wmin');
+  const hMin       = getD('hmin'); const tMin = getD('tmin');
+  const nosingMin  = 0.75; const nosingMax = 1.25;
+
+  const n      = Math.round(totalRise / target);
+  const rise   = totalRise / n;
+  let run      = 17.5 - rise;
+  if (run < runMin) run = runMin;
+  const totRun = run * (n - 1);
+  const strLen = Math.sqrt(totalRise * totalRise + totRun * totRun);
+  const angle  = Math.atan(totalRise / totRun) * 180 / Math.PI;
+  const cutD   = Math.sqrt(rise * rise + run * run);
+  const throat = stringer - cutD;
+  const f2rg   = 2 * rise + run;
+
+  SD = { totalRise, width, tthick, nosing, stringer, headroom, n, rise, run,
+         totRun, strLen, angle, throat, f2rg, rMax, rMin, runMin, wMin, hMin,
+         tMin, nosingMin, nosingMax };
+
+  const rOk = rise <= rMax && rise >= rMin;
+  const ruOk = run >= runMin;
+  const thOk = throat >= tMin;
+
+  document.getElementById('er-mets').innerHTML =
+    mk('', 'Escalones', n, 'risers') +
+    mk(rOk?'ok':'bad', 'Rise exacto', toFrac(rise), 'por escalón') +
+    mk(ruOk?'ok':'bad', 'Run (tread)', toFrac(run), 'profundidad') +
+    mk('', 'Ángulo', angle.toFixed(1)+'°', 'stringer') +
+    mk('', 'Largo stringer', toFrac(strLen), toFtIn(strLen)) +
+    mk(thOk?'ok':'bad', 'Throat', throat.toFixed(2)+'"', 'mín '+tMin+'"');
+
+  const alerts = [];
+  if (rise > rMax)    alerts.push(mkAlert('bad', `Rise ${toFrac(rise)} supera máximo ${rMax}". Agrega un escalón.`));
+  if (rise < rMin)    alerts.push(mkAlert('bad', `Rise ${toFrac(rise)} menor al mínimo ${rMin}".`));
+  if (run < runMin)   alerts.push(mkAlert('bad', `Run ${toFrac(run)} menor al mínimo ${runMin}".`));
+  if (throat < tMin)  alerts.push(mkAlert('bad', `Throat ${throat.toFixed(2)}" insuficiente. IRC requiere mín ${tMin}". Usa 2×12.`));
+  if (width < wMin)   alerts.push(mkAlert('bad', `Ancho ${width}" menor al mínimo ${wMin}".`));
+  if (headroom < hMin) alerts.push(mkAlert('bad', `Headroom ${headroom}" menor al mínimo ${hMin}".`));
+  if (nosing < nosingMin || nosing > nosingMax) alerts.push(mkAlert('warn', `Nosing ${toFrac(nosing)} fuera del rango ¾"–1¼".`));
+  if (f2rg < 17 || f2rg > 18) alerts.push(mkAlert('warn', `Fórmula 2R+G = ${f2rg.toFixed(2)}" (ideal 17"–18").`));
+  if (!alerts.length) alerts.push(mkAlert('ok', 'Todo cumple IRC. Escalera lista para construir.'));
+  document.getElementById('er-alerts').innerHTML = alerts.join('');
+
+  // IRC table
+  const ircRows = [
+    ['Rise máximo', toFrac(rise), rise <= rMax, `máx ${rMax}"`, 'R311.7.5.1'],
+    ['Rise mínimo', toFrac(rise), rise >= rMin, `mín ${rMin}"`, 'R311.7.5.1'],
+    ['Run (tread)', toFrac(run), run >= runMin, `mín ${runMin}"`, 'R311.7.5.2'],
+    ['Nosing', toFrac(nosing), nosing>=nosingMin&&nosing<=nosingMax, '¾"–1¼"', 'R311.7.5.3'],
+    ['Throat stringer', throat.toFixed(2)+'"', throat>=tMin, `mín ${tMin}"`, 'R802.7'],
+    ['Ancho escalera', width+'"', width>=wMin, `mín ${wMin}"`, 'R311.7.1'],
+    ['Headroom', headroom+'"', headroom>=hMin, `mín ${hMin}"`, 'R311.7.2'],
+    ['Fórmula 2R+G', f2rg.toFixed(2)+'"', f2rg>=17&&f2rg<=18, '17"–18"', 'Best practice'],
+  ];
+  document.getElementById('er-irc').innerHTML =
+    ircRows.map(r => `
+      <div class="irc-row">
+        <span class="irc-name">${r[0]}</span>
+        <span class="irc-ref">${r[3]}</span>
+        <span class="irc-val">${r[1]}</span>
+        <span class="tag ${r[2]?'ok':'bad'}">${r[2]?'OK':'FALLA'}</span>
+      </div>`).join('') +
+    `<div style="margin-top:8px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace">IRC 2021 — R311.7 / R802.7</div>`;
+
+  // Tabla de escalones
+  let rows = '';
+  for (let i = 1; i <= n; i++) {
+    const rc = i === 1 ? rise - tthick : rise;
+    rows += `<tr class="${i===1?'sp':''}">
+      <td>${i}</td>
+      <td>${toFrac(rise*i)}</td>
+      <td>${toFrac(run*(i-1))}</td>
+      <td>▲${toFrac(rc)} ▶${toFrac(run)}</td>
+      <td style="font-size:10px;color:var(--text3)">${i===1?'*-tread':''}</td>
+    </tr>`;
+  }
+  document.getElementById('er-tbody').innerHTML = rows;
+
+  // Materiales
+  const wt = getD('wt') / 100;
+  const stringerLbl = document.getElementById('er-stringer').value === '11.25' ? '2×12' : '2×10';
+  const strLF = Math.ceil(3 * (strLen/12) * 1.05);
+  const treadLF = Math.ceil(n * ((width + nosing)/12) * (1 + wt));
+  const riserLF = Math.ceil(n * (width/12) * (1 + wt));
+  document.getElementById('er-mats').innerHTML = `
+    <div class="mat-row">
+      <div><div class="mat-name">${stringerLbl} — Stringers</div><div class="mat-note">3 piezas × ${toFtIn(Math.round(strLen))} c/u</div></div>
+      <div class="mat-qty">${strLF} LF</div>
+    </div>
+    <div class="mat-row">
+      <div><div class="mat-name">Treads (tablones)</div><div class="mat-note">${n} piezas × ${toFrac(width+nosing)} + ${Math.round(getD('wt'))}% waste</div></div>
+      <div class="mat-qty">${treadLF} LF</div>
+    </div>
+    <div class="mat-row">
+      <div><div class="mat-name">Risers (verticales)</div><div class="mat-note">${n} piezas × ${width}" + ${Math.round(getD('wt'))}% waste</div></div>
+      <div class="mat-qty">${riserLF} LF</div>
+    </div>
+    <div style="margin-top:10px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace">
+      LF = Linear Feet · Waste editable en pestaña Defaults
+    </div>`;
+
+  document.getElementById('er-out').style.display = 'block';
+  drawDiag();
+}
+
+function drawDiag() {
+  if (!SD.n) return;
+  const d = SD;
+  const svg = document.getElementById('er-svg');
+  const W = 360, pL = 30, pB = 30, mW = W-pL-20, mH = 180;
+  const sc = Math.min(mW/(d.totRun+d.run), mH/d.totalRise);
+  const ox = pL, oy = mH + pB;
+  const rx = d.run*sc, ry = d.rise*sc;
+  const svgH = mH + pB + 22;
+  svg.setAttribute('viewBox', `0 0 ${W} ${svgH}`);
+  let pts = `${ox},${oy}`;
+  for (let i=0;i<d.n;i++) pts+=` ${ox+i*rx},${oy-i*ry} ${ox+i*rx},${oy-(i+1)*ry}`;
+  pts += ` ${ox+d.n*rx},${oy-d.n*ry} ${ox+d.n*rx},${oy}`;
+  let h = `<polygon points="${pts}" fill="#e8a24418" stroke="#e8a244" stroke-width="1.2"/>`;
+  for (let i=0;i<d.n;i++) {
+    const x=ox+i*rx, y=oy-(i+1)*ry;
+    h += `<rect x="${x}" y="${y}" width="${rx}" height="3.5" fill="#4a9ee0" opacity=".9" rx="1"/>`;
+    h += `<rect x="${x}" y="${y+3.5}" width="3" height="${ry-3.5}" fill="#9b7edd" opacity=".8" rx="1"/>`;
+  }
+  h += `<line x1="${ox-6}" y1="${oy}" x2="${ox+d.n*rx+10}" y2="${oy}" stroke="#3a3a3a" stroke-width="2"/>`;
+  h += `<line x1="${ox+d.n*rx-8}" y1="${oy-d.n*ry}" x2="${ox+d.n*rx+18}" y2="${oy-d.n*ry}" stroke="#3a3a3a" stroke-width="2"/>`;
+  h += `<text x="${ox+d.n*rx/2}" y="${oy+17}" font-size="10" fill="#4e4c4a" font-family="DM Mono,monospace" text-anchor="middle">${d.n} risers × ${toFrac(d.rise)} — Run total: ${toFrac(d.totRun)}</text>`;
+  svg.innerHTML = h;
+}
+
+// ============================================================
+// MÓDULO 2: BALAUSTRES
+// ============================================================
+function calcBal() {
+  const length   = state['bal-len'];
+  const bw       = state['bal-bw'];
+  const maxGap   = state['bal-gap'];
+  const pw       = state['bal-pw'];
+  const posts    = Math.round(state['bal-posts']);
+  const bays     = posts - 1;
+  const free     = length - posts * pw;
+  const spBay    = free / bays;
+  const bPerBay  = Math.ceil((spBay - maxGap) / (maxGap + bw));
+  const total    = bPerBay * bays;
+  const totBW    = total * bw;
+  const gap      = (free - totBW) / (total + bays);
+  const ok       = gap <= maxGap && gap >= 0;
+
+  document.getElementById('bal-mets').innerHTML =
+    mk(ok?'ok':'bad', 'Gap real', toFrac(gap), `máx ${maxGap}"`) +
+    mk('', 'Total balaustres', total, `${bPerBay}/bay × ${bays} bays`) +
+    mk('', 'Espacio libre', toFrac(free), 'sin postes');
+
+  const alerts = [];
+  if (!ok || gap < 0) alerts.push(mkAlert('bad', `Gap ${toFrac(gap)} supera máximo ${maxGap}". Agrega un baluster.`));
+  if (ok) alerts.push(mkAlert('ok', `Gap real ${toFrac(gap)} cumple IRC. Necesitas ${total} balaustres.`));
+  document.getElementById('bal-alerts').innerHTML = alerts.join('');
+
+  document.getElementById('bal-detail').innerHTML = `
+    <div class="card-hd">Distribución detallada</div>
+    <div class="irc-row"><span class="irc-name">Balaustres por bay</span><span class="irc-val">${bPerBay}</span></div>
+    <div class="irc-row"><span class="irc-name">Número de bays</span><span class="irc-val">${bays}</span></div>
+    <div class="irc-row"><span class="irc-name">Espacio por bay</span><span class="irc-val">${toFrac(spBay)}</span></div>
+    <div class="irc-row"><span class="irc-name">Gap real</span><span class="irc-val">${toFrac(gap)}</span><span class="tag ${ok?'ok':'bad'}">${ok?'OK':'FALLA'}</span></div>
+    <div class="irc-row"><span class="irc-name">IRC máximo R312.1.3</span><span class="irc-val">${maxGap}"</span><span class="tag na">REF</span></div>`;
+  document.getElementById('bal-out').style.display = 'block';
+}
+
+function calcHr() {
+  const run    = state['hr-run'];
+  const rise   = state['hr-rise'];
+  const h      = state['hr-h'];
+  const h2     = state['hr-h2'];
+  const hrMin  = getD('hrmin');
+  const hrMax  = getD('hrmax');
+  const len    = Math.sqrt(rise*rise + run*run);
+  const total  = len + 24; // +12" ext top + 12" ext bot mínimo IRC
+  const ok     = h >= hrMin && h <= hrMax;
+
+  document.getElementById('hr-mets').innerHTML =
+    mk('', 'Largo inclinado', toFrac(len), toFtIn(Math.round(len))) +
+    mk('', 'Con extensiones (+24")', toFrac(total), toFtIn(Math.round(total))) +
+    mk(ok?'ok':'bad', 'Altura handrail', h+'"', `${hrMin}"–${hrMax}"`);
+
+  const alerts = [];
+  if (!ok) alerts.push(mkAlert('bad', `Altura ${h}" fuera del rango IRC ${hrMin}"–${hrMax}".`));
+  if (h2 > 0 && (h2 < 24 || h2 > 32)) alerts.push(mkAlert('warn', `2da altura ${h2}" fuera del rango típico 24"–32".`));
+  if (!alerts.length) alerts.push(mkAlert('ok', `Handrail cumple. Compra ${toFrac(total)} (${toFtIn(Math.ceil(total))}) de material.`));
+  document.getElementById('hr-alerts').innerHTML = alerts.join('');
+  document.getElementById('hr-out').style.display = 'block';
+}
+
+// ============================================================
+// MÓDULO 3: CONVERSOR
+// ============================================================
+function updateConvResult() {
+  const v = state['cv-in'];
+  document.getElementById('cv-frac').textContent   = toFrac(v);
+  document.getElementById('cv-dec2').textContent   = v.toFixed(4).replace(/\.?0+$/, '') + '"';
+  document.getElementById('cv-ft').textContent     = toFtIn(v);
+  document.getElementById('cv-ftdec').textContent  = (v/12).toFixed(4).replace(/\.?0+$/,'') + ' ft';
+  document.getElementById('cv-cm').textContent     = (v * 2.54).toFixed(2) + ' cm';
+  document.getElementById('cv-mm').textContent     = (v * 25.4).toFixed(1) + ' mm';
+}
+
+function calcPyth() {
+  const a = state['py-a'], b = state['py-b'];
+  const c = Math.sqrt(a*a + b*b);
+  const ang = Math.atan(b/a) * 180/Math.PI;
+  // Verificar si es múltiplo 3-4-5
+  const ratio = a/b;
+  const is345 = Math.abs(ratio - 3/4) < 0.01 || Math.abs(ratio - 4/3) < 0.01 ||
+                Math.abs(ratio - 6/8) < 0.01 || Math.abs(ratio - 9/12) < 0.01;
+
+  document.getElementById('py-c').textContent    = toFrac(c);
+  document.getElementById('py-cft').textContent  = toFtIn(c);
+  document.getElementById('py-ang').textContent  = ang.toFixed(2) + '°';
+  document.getElementById('py-sq').textContent   = is345 ? '✓ Es múltiplo 3-4-5' : 'Verifica con la diagonal';
+  document.getElementById('py-out').style.display = 'block';
+}
+
+function calcAngle() {
+  const rise = state['ang-rise'], run = state['ang-run'];
+  const deg  = Math.atan(rise/run) * 180/Math.PI;
+  const bevel = 90 - deg;
+  const comp  = 90 - deg;
+  const pitch = (rise / run * 12).toFixed(2);
+
+  document.getElementById('ang-deg').textContent   = deg.toFixed(2) + '°';
+  document.getElementById('ang-bevel').textContent = bevel.toFixed(2) + '° (sierra)';
+  document.getElementById('ang-comp').textContent  = comp.toFixed(2) + '°';
+  document.getElementById('ang-pitch').textContent = pitch + '" por pie';
+  document.getElementById('ang-out').style.display = 'block';
+}
+
+// ============================================================
+// MÓDULO 4: FRAMING DE PAREDES
+// ============================================================
+
+// Tabla de headers IRC R602.7 (span máximo en pies según carga)
+const HEADERS = [
+  { size: '2×4',  span: 3.5,  note: 'Vano pequeño' },
+  { size: '2×6',  span: 5,    note: 'Vano mediano' },
+  { size: '2×8',  span: 7,    note: 'Puerta doble' },
+  { size: '2×10', span: 8.5,  note: 'Vano grande' },
+  { size: '2×12', span: 10,   note: 'Garage / vano grande' },
+  { size: '(2)2×10', span: 11, note: 'Con carga de piso encima' },
+  { size: '(2)2×12', span: 13, note: 'Máximo residencial' },
+];
+
+function calcFraming() {
+  const len   = state['fw-len'];
+  const h     = state['fw-h'];
+  const oc    = parseInt(document.getElementById('fw-oc').value);
+  const size  = document.getElementById('fw-size').value;
+  const opens = Math.round(state['fw-open']);
+  const wasteS = getD('ws') / 100;
+
+  // Número de studs
+  // Fórmula estándar: (longitud / spacing) + 1 + extras por esquinas
+  const studCount = Math.ceil(len / oc) + 1;
+  // Studs extra: 2 king studs + 2 jack studs por vano
+  const extraStuds = opens * 4;
+  const totalStuds = Math.ceil((studCount + extraStuds) * (1 + wasteS));
+
+  // Largo de studs (ceiling height - plates)
+  // 3 plates: 2 bottom + 1 top (o doble top plate = 2)
+  // Largo stud = ceiling height - 3 plates (3 × 1.5" = 4.5")
+  const studLen = h - 4.5;
+
+  // Plates: top plate doble + bottom plate simple = 3 × longitud
+  const plateLF = Math.ceil(len * 3 / 12); // en pies lineales
+
+  // Linear feet de madera total
+  const studLF = Math.ceil(totalStuds * (studLen / 12));
+
+  
+  document.getElementById('fw-mets').innerHTML =
+    mk('', 'Total studs', totalStuds, `incl. ${Math.round(wasteS*100)}% waste`) +
+    mk('', 'Largo de stud', toFrac(studLen), toFtIn(studLen)) +
+    mk('', 'Spacing', oc+'" OC', size);
+
+  document.getElementById('fw-alerts').innerHTML =
+    mkAlert('ok', `Pared de ${toFrac(len)} (${toFtIn(len)}) con ${oc}" OC. ${totalStuds} studs de ${toFrac(studLen)}.`);
+
+  // Tab: Studs detalle
+  document.getElementById('fw-studs').innerHTML = `
+    <div class="irc-row"><span class="irc-name">Longitud pared</span><span class="irc-val">${toFrac(len)} / ${toFtIn(len)}</span></div>
+    <div class="irc-row"><span class="irc-name">Ceiling height</span><span class="irc-val">${toFrac(h)}</span></div>
+    <div class="irc-row"><span class="irc-name">Spacing</span><span class="irc-val">${oc}" OC</span></div>
+    <div class="irc-row"><span class="irc-name">Studs base</span><span class="irc-val">${studCount}</span></div>
+    <div class="irc-row"><span class="irc-name">Studs extra (vanos)</span><span class="irc-val">${extraStuds} (+${opens} vanos × 4)</span></div>
+    <div class="irc-row"><span class="irc-name">+${Math.round(wasteS*100)}% waste</span><span class="irc-val">${totalStuds} total</span></div>
+    <div class="irc-row"><span class="irc-name">Largo de cada stud</span><span class="irc-val">${toFrac(studLen)}</span></div>`;
+
+  // Tab: Headers IRC
+  document.getElementById('fw-headers').innerHTML = `
+    <div style="font-size:11px;color:var(--text3);margin-bottom:10px;font-family:'DM Mono',monospace">
+      Tabla IRC R602.7 — Tamaño mínimo de header según vano (1 piso)
+    </div>
+    <div class="tbl-wrap">
+      <table class="header-tbl"><thead><tr><th>Header</th><th>Vano máx.</th><th>Uso típico</th></tr></thead>
+      <tbody>${HEADERS.map(h =>
+        `<tr><td>${h.size}</td><td>${h.span}' (${(h.span*12).toFixed(0)}")</td><td>${h.note}</td></tr>`
+      ).join('')}</tbody></table>
+    </div>
+    <div style="margin-top:8px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace">
+      Siempre verifica con el ingeniero para cargas de más de 1 piso
+    </div>`;
+
+  // Tab: Lista de madera
+  document.getElementById('fw-lista').innerHTML = `
+    <div class="mat-row">
+      <div><div class="mat-name">${size} — Studs</div><div class="mat-note">${totalStuds} piezas × ${toFtIn(Math.round(studLen))}</div></div>
+      <div class="mat-qty">${studLF} LF</div>
+    </div>
+    <div class="mat-row">
+      <div><div class="mat-name">${size} — Plates (3 capas)</div><div class="mat-note">Top doble + bottom simple</div></div>
+      <div class="mat-qty">${plateLF} LF</div>
+    </div>
+    <div class="mat-row">
+      <div><div class="mat-name">Total madera pared</div><div class="mat-note">Studs + plates</div></div>
+      <div class="mat-qty">${studLF + plateLF} LF</div>
+    </div>
+    <div style="margin-top:10px;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace">
+      LF = Linear Feet · No incluye headers de vanos
+    </div>`;
+
+  document.getElementById('fw-out').style.display = 'block';
+}
+
+// ============================================================
+// DEFAULTS
+// ============================================================
+function saveDefaults() {
+  const btn = event.target;
+  btn.textContent = '✓ Guardado';
+  setTimeout(() => btn.textContent = 'Guardar cambios', 1800);
+}
+function resetDefaults() {
+  const defs = {
+    'def-rmax':7.75,'def-rmin':4,'def-runmin':10,'def-wmin':36,
+    'def-hmin':80,'def-tmin':3.5,'def-bgap':4,'def-hrmin':34,'def-hrmax':38,
+    'def-wt':10,'def-ws':10
+  };
+  for (const [k, v] of Object.entries(defs)) {
+    state[k] = v;
+    updateDisplay(k);
+  }
+  const btn = event.target;
+  btn.textContent = '✓ Restaurado';
+  setTimeout(() => btn.textContent = 'Restaurar IRC original', 1800);
+}
+
+// ============================================================
+// INICIALIZACIÓN
+// ============================================================
+// Al cargar, inicializa todos los displays y calcula ejemplos
+window.addEventListener('load', () => {
+  // Inicializar todos los campos
+  for (const id of Object.keys(state)) updateDisplay(id);
+  // Calcular ejemplos para que la app muestre resultados desde el inicio
+  calcEscalera();
+  updateConvResult();
+});
+
+// Cerrar teclado si el usuario toca fuera
+document.addEventListener('click', e => {
+  if (activeField && !e.target.closest('.fi-display') && !e.target.closest('.fkb')) {
+    closeKb(activeField);
+  }
+});
+</script>
+</body>
+</html>
